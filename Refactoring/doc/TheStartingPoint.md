@@ -158,7 +158,7 @@ Z：步骤如下
 
    thisAmount 会变。只有一个变量，可以作为返回值。
 
-D：例如以下重构，把switch方法块提取出来 (用Eclipse的Extract Method可以快速实现)
+D：例如以下重构，把switch方法块提取出来 (用**Extract Method**可以快速实现)
 
 Customer.java
 
@@ -297,7 +297,7 @@ M：这段代码应该就完成了吧？
 
 Z：观察一下这个方法，它没有用到Customer类的任何信息。**方法用到哪些数据，就把它方法数据属的类中**。
 
-而这个方法用到Rental类的数据，所以应该将其迁移到Rental类中，并对参数进行处理：
+而这个方法用到Rental类的数据，所以应该将其迁移到Rental类中（**Move Method**），并对参数进行处理：
 
 Rental.java   
 
@@ -334,7 +334,7 @@ public class Rental {
 
 对应的，调用方法也需要进行修改``thisAmount = each.getCharge();    //重构``    
 
-Z：回到Customer.java的``statement()``方法中，我们要尽量减少临时，像``thisAmount``就可以用``amountFor(each)``进行代替。**临时变量往往会引发问题，导致跟丢的情况**。   
+Z：回到Customer.java的``statement()``方法中，我们要尽量减少临时，像``thisAmount``就可以用``amountFor(each)``进行代替(**Replace Temp with Query**)。**临时变量往往会引发问题，导致跟丢的情况**。   
 
 ```java
 	public String statement(){
@@ -407,7 +407,56 @@ Rental.java
 	}
 ```
 
+Z：观察Customer.java的statement()方法，你觉得还有什么需要改进的？
 
+M：临时变量有点多，但是这也没什么办法啊。
+
+Z：可以用**Replace Temp with Query**，将变量提取成查询函数出来
+
+```java
+	public String statement(){
+		Enumeration rentals = _rentals.elements();
+		String result = "Rental Record for" + getName() + "\n";
+		while(rentals.hasMoreElements()){
+			Rental each = (Rental) rentals.nextElement();
+			result += "\t" +each.getMovie().getTitle() +"\t" + String.valueOf(each.getCharge()) + "\n"; //重构临时变量
+		}
+		result += "Amount owed is" + String.valueOf(getTotalCharge()) + "\n";   //重构总费用计算
+		result += "You earned" + String.valueOf(getTotalIFrequentRenterPoints()) + "frequent renter points";  //重构积分计算
+		return result;
+		
+	}
+	
+	/**
+	 * 重构积分计算
+	 * @return
+	 */
+	private int getTotalIFrequentRenterPoints(){
+		int result = 0;
+		Enumeration rentals = _rentals.elements();
+		while(rentals.hasMoreElements()){
+			Rental each = (Rental) rentals.nextElement();
+			result += each.getFrequentRenterPoints();
+		}
+		return result;
+	}
+	
+	/**
+	 * 重构总费用计算
+	 * @return
+	 */
+	private double getTotalCharge(){
+		double result = 0;
+		Enumeration rentals = _rentals.elements();
+		while(rentals.hasMoreElements()){
+			Rental each = (Rental) rentals.nextElement();
+			result += each.getCharge();
+		}
+		return result;
+	}
+```
+
+M：就是把临时变量用方法替换出来，但是该方法比较复杂，带有循环，所以还需要把循环抽取出来。
 
 
 
