@@ -456,7 +456,256 @@ Z：可以用**Replace Temp with Query**，将变量提取成查询函数出来
 	}
 ```
 
-M：就是把临时变量用方法替换出来，但是该方法比较复杂，带有循环，所以还需要把循环抽取出来。
+Z：就是把临时变量用方法替换出来，但是该方法比较复杂，带有循环，所以还需要把循环抽取出来。这样做有利于新的statement方法复用原来的计算。
+
+M：之前讲到，Customer类中的``getCharge()``方法(带switch)用到Rental类的数据，所以应该将其迁移到Rental类中（**Move Method**），并对参数进行处理。但是考虑一下，它用到的参数除了Rental的getDaysRented()，其实还用到了Movie类中的方法``getMovie().getPriceCode()``。为什么``getCharge()``方法选择的是Rental类？
+
+```java
+	public class Rental {
+        ...
+	/**
+	 * 重构switch方法块(迁移)
+	 * @param each
+	 * @return
+	 */
+	public double getCharge() {
+		double result = 0;
+		switch(getMovie().getPriceCode()){
+			case Movie.REGULAR:
+				result += 2;
+				if(getDaysRented() > 2){
+					result += (getDaysRented() - 2) * 1.5;
+				}
+				break;
+			case Movie.NEW_RELEASE:
+				result += getDaysRented() * 3;
+				break;
+			case Movie.CHILDRENS:
+				result += 1.5;
+				if(getDaysRented() > 3){
+					result += (getDaysRented() - 3) * 1.5;
+				}
+				break;
+		}
+		return result;
+	}
+```
+
+Z：那就要考虑系统的业务了，像上方是处于Rental类，将Movie对象传入``getCharge()``方法中。而以下代码是在Movie中，将``getDaysRented()``也就是租贸长度传入。
+
+```java
+public class Movie {
+    ...	
+	/**
+	 * 重构switch方法块(迁移)
+	 * @param daysRented 租贸长度
+	 * @return
+	 */
+	public double getCharge(int daysRented) {   //传入租贸长度
+		double result = 0;
+		switch(getPriceCode()){    //重构调用自身方法
+			case Movie.REGULAR:
+				result += 2;
+				if(daysRented > 2){
+					result += (daysRented - 2) * 1.5;
+				}
+				break;
+			case Movie.NEW_RELEASE:
+				result += daysRented * 3;
+				break;
+			case Movie.CHILDRENS:
+				result += 1.5;
+				if(daysRented > 3){
+					result += (daysRented - 3) * 1.5;
+				}
+				break;
+		}
+		return result;
+	}
+```
+
+Movie影片对象和daysRented租贸长度两个参数，选择daysRented作为参数传入，因为相对于Movie，Movie的变化具有不稳定倾向，放在该类中可以控制它造成的影响。再者daysRented的传入也更利于复用。  
+
+M：相似的还有Rental中的``getFrequentRenterPoints()``方法，这要怎么迁移呢（**Move Method**）？  
+
+```java
+public class Rental {
+    ...
+	/**
+	 * 重构积分计算方法
+	 * @return
+	 */
+	public int getFrequentRenterPoints() {
+		int points = 0;
+		points ++;
+		if((getMovie().getPriceCode() == Movie.NEW_RELEASE) && getDaysRented() > 1){
+			points ++;
+		}
+		return points;
+	}
+```
+
+Z：迁移到Movie类中，由于points是固定的，所以用常量值返回:
+
+```java
+	/**
+	 * 重构积分计算方法（迁移）
+	 * @return
+	 */
+	public int getFrequentRenterPoints(int daysRented) {
+		if((getPriceCode() == Movie.NEW_RELEASE) && daysRented > 1){   
+			return 2;
+		}else{
+			return 1;
+		}
+	}
+```
+
+M：因为不同的影片类型有不同的计费方式，而计费方式又存在多次改变的情况。这段代码可以进行优化吗？
+
+```java
+public class Movie {
+    ...	
+	/**
+	 * 重构switch方法块(迁移)
+	 * @param daysRented 租贸长度
+	 * @return
+	 */
+	public double getCharge(int daysRented) {   //传入租贸长度
+		double result = 0;
+		switch(getPriceCode()){    //重构调用自身方法
+			case Movie.REGULAR:
+				result += 2;
+				if(daysRented > 2){
+					result += (daysRented - 2) * 1.5;
+				}
+				break;
+			case Movie.NEW_RELEASE:
+				result += daysRented * 3;
+				break;
+			case Movie.CHILDRENS:
+				result += 1.5;
+				if(daysRented > 3){
+					result += (daysRented - 3) * 1.5;
+				}
+				break;
+		}
+		return result;
+	}
+```
+
+Z：可以构造Price类下的三个子类，每个子类有自己的计费方式。来替换switch，叫做State模式
+
+Price父类
+
+```java
+abstract class Price {
+	abstract int getPriceCode();
+	/**
+	 * 重构switch方法块(迁移)
+	 * @param daysRented 租贸长度
+	 * @return
+	 */
+	abstract double getCharge(int daysRented);
+}
+```
+
+ChildrensPrice子类
+
+```java
+public class ChildrensPrice extends Price{
+
+	@Override
+	int getPriceCode() {
+		return Movie.CHILDRENS;
+	}
+	/**
+	 * 重构switch方法块(迁移)
+	 * @param daysRented 租贸长度
+	 * @return
+	 */
+	public double getCharge(int daysRented) {  
+		double result = 1.5;
+		if(daysRented > 3){
+			result += (daysRented - 3) * 1.5;
+		}
+		return result;
+	}
+}
+```
+
+NewReleasePrice子类
+
+```java
+public class NewReleasePrice extends Price{
+
+	@Override
+	int getPriceCode() {
+		return Movie.NEW_RELEASE;
+	}
+	public double getCharge(int daysRented) {  
+		return daysRented * 3;
+	}		
+}
+```
+
+RegularPrice子类
+
+```java
+public class RegularPrice extends Price{
+
+	@Override
+	int getPriceCode() {
+		return Movie.REGULAR;
+	}
+	/**
+	 * 重构switch方法块(迁移)
+	 * @param daysRented 租贸长度
+	 * @return
+	 */
+	public double getCharge(int daysRented) {  
+		double result = 2;
+		if(daysRented > 2){
+			result += (daysRented - 2) * 1.5;
+		}
+		return result;
+	}
+}
+```
+
+M：我们本来是通过``		switch(getPriceCode()){    //重构调用自身方法``来找到PriceCode对应的计费方式。但是现在拆分成类继承的方式了，怎么对应？
+
+Z：可以在初始化Movie对象的时候就进行初始化对应的价格类型对象，并且修改getPriceCode方式
+
+```java
+public class Movie {
+    ...
+	public Movie(String title, int priceCode){
+		_title = title;
+		setPriceCode(priceCode);    //使用set方法赋值
+	}
+	
+	public int getPriceCode(){
+		return _price.getPriceCode();   //修改获取方式
+	}
+	//重构setPriceCode，并且初始化对应对象
+	private Price _price;
+	public void setPriceCode(int arg){
+		switch (arg) {
+		case REGULAR:
+			_price = new RegularPrice();   //初始化对应的价格类型对象
+			break;
+		case CHILDRENS:
+			_price = new ChildrensPrice();
+			break;
+		case NEW_RELEASE:
+			_price = new NewReleasePrice();
+			break;
+		default:
+			throw new IllegalArgumentException("Incorrect Price Code");
+		}
+	}
+```
 
 
 
@@ -464,7 +713,19 @@ M：就是把临时变量用方法替换出来，但是该方法比较复杂，�
 
 
 
-51页
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
