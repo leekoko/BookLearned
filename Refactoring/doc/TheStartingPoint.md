@@ -706,55 +706,44 @@ public class Movie {
 	}
 ```
 
+M：这段代码怎么看出需要重构呢？
 
+```java
+	/**
+	 * 重构积分计算方法
+	 * @return
+	 */
+	public int getFrequentRenterPoints() {
+		int points = 0;
+		points ++;
+		if((getMovie().getPriceCode() == Movie.NEW_RELEASE) && getDaysRented() > 1){
+			points ++;
+		}
+		return points;
+	}
+```
 
+Z：不同类型的影片对应不同的积分计算，所以可能是希望通过不同的类来规定该类的积分规则
 
+Price.java 设定默认的积分值
 
+```java
+	/**
+	 * 重构积分计算方法（迁移）
+	 * @return
+	 */
+	public int getFrequentRenterPoints(int daysRented) {
+		return 1;
+	}
+```
 
+NewReleasePrice.java对积分规则进行覆写
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+```java
+public class NewReleasePrice extends Price{
+    ...
+	//覆盖函数
+	public int getFrequentRenterPoints(int daysRented){
+		return (daysRented > 1) ? 2 : 1;
+	}
+```
