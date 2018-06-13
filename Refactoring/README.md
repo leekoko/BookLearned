@@ -12,7 +12,9 @@
 
 #### [序言](extra/preface.md)   
 
-#### 1.[Day 1 : Encapsulate Collection封装集合](extra/EncapsulateCollection.md)   
+#### 1.Day 1 : Encapsulate Collection封装集合(Java不适用)   
+
+#### 2.[Day 2 : Move Method方法搬移](extra/MoveMethod.md)   
 
 
 
