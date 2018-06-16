@@ -1,0 +1,7 @@
+INDEX VERSION 1.3+D:\github_place\BookLearned\CreateSpring\SourceCode\.metadata\.plugins\org.eclipse.wst.jsdt.core\indexes
+1144602944.index
+3452151688.index
+1455510187.index
+3517979756.index
+1507208465.index
+156263660.index

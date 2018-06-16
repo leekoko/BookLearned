@@ -1,0 +1,7 @@
+package org.litespring.beans.factory.support;
+
+import org.litespring.beans.factory.BeanFactory;
+
+public class DefaultBeanFactory implements BeanFactory {
+
+}

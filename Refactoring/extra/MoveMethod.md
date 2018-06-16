@@ -1,4 +1,4 @@
-## Day2 方法迁移（Move Method）
+## 方法迁移
 
 D：原来代码
 
@@ -80,9 +80,7 @@ class AccountInterest{
 
 M：这段代码有什么问题？
 
-Z：``CalculateInterestRate（）``方法在AccountInterest类中使用，但是没在BankAccount中
-
-M：
+Z：``CalculateInterestRate（）``方法在AccountInterest类中使用，但是没在BankAccount中用到，所以应该将这个方法迁移到AccountInterest类中
 
 ```java
 public class BankAccount{
@@ -161,55 +159,4 @@ class AccountInterest{
 }
 ```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+M：所以总结来说，一个方法如果用到A类的属性，被B类调用。应该放在B类中。

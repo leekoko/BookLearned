@@ -16,13 +16,20 @@
 
 #### 2.[Day 2 : Move Method方法搬移](extra/MoveMethod.md)   
 
+#### 3.[Day 3，4 :Pull Up Method方法提公&Push Down Method方法降低](extra/PullUpMethod.md)      
+
+#### 4.[Day 5 ，6: Pull Up Field提升字段& Push Down Field降低字段](extra/PullUpField.md)
+
+#### 5.[Day8：重命名Rename](extra/Rename.md)      
+
+#### 6.[使用委托代替继承Replace Inheritance with Delegation](extra/Replace.md)    
 
 
-1. [Refactoring Day 2 : Move Method](https://lostechies.com/blogs/sean_chambers/archive/2009/08/02/refactoring-day-2-move-method.aspx)
-2. [Refactoring Day 3 : Pull Up Method](https://lostechies.com/blogs/sean_chambers/archive/2009/08/03/refactoring-day-3-pull-up-method.aspx)
-3. [Refactoring Day 4 : Push Down Method](https://lostechies.com/blogs/sean_chambers/archive/2009/08/04/refactoring-day-4-push-down-method.aspx)
-4. [Refactoring Day 5 : Pull Up Field](https://lostechies.com/blogs/sean_chambers/archive/2009/08/05/refactoring-day-5-pull-up-field.aspx)
-5. [Refactoring Day 6 : Push Down Field](https://lostechies.com/blogs/sean_chambers/archive/2009/08/06/refactoring-day-6-push-down-field.aspx)
+
+
+
+
+
 6. [Refactoring Day 7 : Rename (method, class, parameter)](https://lostechies.com/blogs/sean_chambers/archive/2009/08/07/refactoring-day-7-rename-method-class-parameter.aspx)
 7. [Refactoring Day 8 : Replace Inheritance with Delegation](https://lostechies.com/blogs/sean_chambers/archive/2009/08/07/refactoring-day-8-replace-inheritance-with-delegation.aspx)
 8. [Refactoring Day 9 : Extract Interface](https://lostechies.com/blogs/sean_chambers/archive/2009/08/07/refactoring-day-9-extract-interface.aspx)
