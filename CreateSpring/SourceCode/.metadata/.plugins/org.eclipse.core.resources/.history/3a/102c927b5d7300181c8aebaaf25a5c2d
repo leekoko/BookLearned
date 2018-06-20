@@ -1,0 +1,5 @@
+package org.litespring.beans.factory;
+
+public class BeanCreationException {
+
+}

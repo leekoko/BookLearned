@@ -93,13 +93,98 @@ M：所以``BeanFactory``接口暴露的就是:
 
 这里获取Bean对象就不使用面向接口了么。
 
-D：第一步写完测试案例，并且把相关的类生成出来，TDD编程的第二步就是检验是否会报错，直接运行一次，看看有没正常报错。   
+D：第一步写完测试案例，并且把相关的类生成出来，TDD编程的第二步就是检验是否会报错，直接运行一次，看看有没正常报错。第三步就是开始填充相关代码，保证java代码顺利通过测试。   
 
-D：第三步就是开始填充相关代码，保证java代码顺利通过测试。   
+M：``BeanFactory factory = new DefaultBeanFactory("petstore-v1.xml");``填充什么内容呢？
 
-M：填充什么内容呢？
+Z：DefaultBeanFactory.java类的构造方法  
 
-Z：
+```java
+	/**
+	 * 构造文件
+	 * @param configFile
+	 */
+	public DefaultBeanFactory(String configFile) {
+		loadBeanDefinition(configFile);   //调用loadBeanDefinition方法
+	}
+
+	private void loadBeanDefinition(String configFile) {
+		InputStream is = null;
+		try {
+			ClassLoader cl = ClassUtils.getDefaultClassLoader();
+			is = cl.getResourceAsStream(configFile);
+			SAXReader reader = new SAXReader();
+			Document doc = reader.read(is);
+			
+			Element root = doc.getRootElement();  //<beans>
+			Iterator<Element> iter = root.elementIterator();
+			while(iter.hasNext()){
+				Element ele = (Element)iter.next();
+				String id = ele.attributeValue(ID_ATTRIBUTE);
+				String beanClassName = ele.attributeValue(CLASS_ATTRIBUTE);
+				BeanDefinition bd = new GenericBeanDefinition(id,beanClassName);
+				this.beanDefinitionMap.put(id,bd);
+			}
+		} catch (Exception e) {
+			//e.printStackTrace();
+			throw new BeanDefinitionStoreException("IOException parsing XML document", e);
+		}finally {
+			if(is != null){
+				try {
+					is.close();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+```
+
+M：``ClassLoader cl = ClassUtils.getDefaultClassLoader();``ClassLoader是怎么来的？有什么用？
+
+Z：ClassLoder来自于工具类的获取
+
+```java
+	public static ClassLoader getDefaultClassLoader() {
+		ClassLoader cl = null;
+		try {
+			cl = Thread.currentThread().getContextClassLoader();
+		}
+		catch (Throwable ex) {
+			// Cannot access thread context ClassLoader - falling back...
+		}
+		if (cl == null) {
+			// No thread context class loader -> use class loader of this class.
+			cl = ClassUtils.class.getClassLoader();
+			if (cl == null) {
+				// getClassLoader() returning null indicates the bootstrap ClassLoader
+				try {
+					cl = ClassLoader.getSystemClassLoader();
+				}
+				catch (Throwable ex) {
+					// Cannot access system ClassLoader - oh well, maybe the caller can live with null...
+				}
+			}
+		}
+		return cl;
+	}
+```
+
+M：``cl = Thread.currentThread().getContextClassLoader();``是什么意思？
+
+Z：一个thread就是一个线程，当你编程使用多线程的时候，用currentthread（）这个method来获取当前运行线程，以便对其进行操作。所以这段代码是获取当前线程的ClassLoader。
+
+M：ClassLoader是什么？有什么作用？
+
+Z：ClassLoader是一个类装载器，可以避免黑客攻击。
+
+
+
+
+
+
+
+loading
 
 
 

@@ -2,10 +2,24 @@
 <qualifiedTypeNameHistroy>
 <fullyQualifiedTypeName name="org.litespring.test.v1.BeanFactoryTest"/>
 <fullyQualifiedTypeName name="java.io.InputStream"/>
-<fullyQualifiedTypeName name="java.lang.ClassLoader"/>
 <fullyQualifiedTypeName name="org.dom4j.io.SAXReader"/>
 <fullyQualifiedTypeName name="org.dom4j.Document"/>
 <fullyQualifiedTypeName name="java.util.Iterator"/>
 <fullyQualifiedTypeName name="org.dom4j.Element"/>
+<fullyQualifiedTypeName name="java.util.Map"/>
 <fullyQualifiedTypeName name="org.litespring.beans.BeanDefinition"/>
+<fullyQualifiedTypeName name="java.lang.ClassLoader"/>
+<fullyQualifiedTypeName name="java.lang.ClassNotFoundException"/>
+<fullyQualifiedTypeName name="java.lang.InstantiationException"/>
+<fullyQualifiedTypeName name="java.lang.IllegalAccessException"/>
+<fullyQualifiedTypeName name="java.util.concurrent.ConcurrentHashMap"/>
+<fullyQualifiedTypeName name="java.lang.RuntimeException"/>
+<fullyQualifiedTypeName name="org.junit.Test"/>
+<fullyQualifiedTypeName name="org.litespring.beans.factory.BeanFactory"/>
+<fullyQualifiedTypeName name="org.litespring.beans.factory.support.DefaultBeanFactory"/>
+<fullyQualifiedTypeName name="org.junit.Assert"/>
+<fullyQualifiedTypeName name="org.litespring.beans.factory.BeanCreationException"/>
+<fullyQualifiedTypeName name="java.lang.Throwable"/>
+<fullyQualifiedTypeName name="org.litespring.beans.BeansException"/>
+<fullyQualifiedTypeName name="org.litespring.beans.factory.BeanDefinitionStoreException"/>
 </qualifiedTypeNameHistroy>
