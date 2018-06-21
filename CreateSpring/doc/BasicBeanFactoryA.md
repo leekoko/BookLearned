@@ -2,7 +2,7 @@
 
 M：spring构造开始，首先要创建什么文件呢？
 
-Z：我们采用的是maven项目，pom文件里面一开始只需要有junit就可以了
+Z：我们采用的是maven项目，pom文件里面一开始只需要有junit，和解析xml的dom4j就可以了
 
 ```xml
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -19,9 +19,12 @@ Z：我们采用的是maven项目，pom文件里面一开始只需要有junit就
 		<version>4.12</version>
 		<scope>test</scope>
 	</dependency>
-      
+    <dependency>
+		<groupId>dom4j</groupId>
+		<artifactId>dom4j</artifactId>
+		<version>1.6.1</version>
+	</dependency>  
   </dependencies>
-  
   
 </project>
 ```
@@ -176,21 +179,222 @@ Z：一个thread就是一个线程，当你编程使用多线程的时候，用c
 
 M：ClassLoader是什么？有什么作用？
 
-Z：ClassLoader是一个类装载器，可以避免黑客攻击。
+Z：ClassLoader是一个类装载器，顾名思义也就是用来加载类的，其机制可以避免黑客攻击。
 
+M：但是几种获取类加载器有什么区别呢，为什么会多层不同方式的获取呢？
 
+Z：分别代表不同方式获取ClassLoader，保证能获取到
 
+```java
+cl = Thread.currentThread().getContextClassLoader();  // 使用当前线程的ClassLoader
+cl = ClassUtils.class.getClassLoader();   // 使用当前类的ClassLoader
+cl = ClassLoader.getSystemClassLoader();  // 使用系统ClassLoader
+```
 
+M：解析xml是怎么实现的呢？
 
+Z：遍历每一个标签，进行标签操作
 
+```java
+			SAXReader reader = new SAXReader();  //dom4j解析xml文件
+			Document doc = reader.read(is);   //读取成Document文件
+			
+			Element root = doc.getRootElement();  //<beans>
+			Iterator<Element> iter = root.elementIterator();
+			while(iter.hasNext()){    
+				Element ele = (Element)iter.next();   //获取标签元素
+				String id = ele.attributeValue(ID_ATTRIBUTE);    //获取id属性
+				String beanClassName = ele.attributeValue(CLASS_ATTRIBUTE);  //获取class属性
+				BeanDefinition bd = new GenericBeanDefinition(id,beanClassName);
+				this.beanDefinitionMap.put(id,bd);
+			}
+```
 
-loading
+M：``BeanDefinition bd = new GenericBeanDefinition(id,beanClassName);``是干嘛用的呢？怎么实现的。
 
+Z：``GenericBeanDefinition``是一个对象，而这是一段构造方法，用来实例化一个面向接口的GenericBeanDefinition对象。
 
+```java
+public class GenericBeanDefinition implements BeanDefinition {
+	private String id;
+	private String beanClassName;
 
+	public GenericBeanDefinition(String id, String beanClassName) {
+		this.id = id;
+		this.beanClassName = beanClassName;
+	}
 
+	public String getBeanClassName() {
+		return this.beanClassName;
+	}
 
+}
+```
 
+M：``this.beanDefinitionMap.put(id,bd);``有什么用？是怎么实现的呢？
 
+Z：这是实例化的一个Map对象``private final Map<String,BeanDefinition> beanDefinitionMap = new ConcurrentHashMap();``  ，只是将对象put进一个map中。
 
+M：ConcurrentHashMap有什么特殊之处，和HashMap有什么区别？
 
+Z：HashMap，Hashtable，ConcurrentHashMap区别如下 ：
+
+1. HashMap中未进行同步考虑，效率比较高。
+
+2. Hashtable则使用了synchronized，但是synchronized是针对整张Hash表的，所以造成巨大的浪费。
+3. ConcurrentHashMap
+
+![](../imgs/S02.jpg)  
+
+跟hashtable相比，ConcurrentHashtable实现的方式是锁桶（或段），它将hash表分为16个桶，诸如get,put,remove等操作只锁定当前用到的桶，提升了读的并发，而写的时候是进行锁定的。  
+
+M：所以``BeanFactory factory = new DefaultBeanFactory("petstore-v1.xml");``做的事情就是将xml解析后，转化为对象存进map里面。而``BeanDefinition bd = factory.getBeanDefinition("petStore");``则是从map中根据键把对应的对象取出来：
+
+```java
+	public BeanDefinition getBeanDefinition(String beanID) {
+		return this.beanDefinitionMap.get(beanID);
+	}
+```
+
+那这跟以下的getBean获取对象有什么区别呢？
+
+```java
+		//实例化对象
+		PetStoreService petStore = (PetStoreService)factory.getBean("petStore");
+```
+
+Z：其实现代码如下
+
+```java
+	public Object getBean(String beanID) {
+		BeanDefinition bd = this.getBeanDefinition(beanID);   //获取定义对象
+		if(bd == null){
+			throw new BeanCreationException("Error creating does not exist");
+			//return null;
+		}
+		ClassLoader cl = ClassUtils.getDefaultClassLoader();
+		String beanClassName = bd.getBeanClassName();
+		try {
+			Class<?> clz = cl.loadClass(beanClassName);
+			return clz.newInstance();   //创建对象
+		}
+		catch (Exception e) {
+			throw new BeanCreationException("Error creating does not exist");
+		}
+		/*catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}catch (InstantiationException e) {
+			e.printStackTrace();
+		}catch (IllegalAccessException e) {
+			e.printStackTrace();
+		}*/
+		
+	}
+```
+
+其第一步就调用了获取bean定义对象方法，而其两者之间的区别就是getBean多出创建对象的方法
+
+```java
+		ClassLoader cl = ClassUtils.getDefaultClassLoader();
+		String beanClassName = bd.getBeanClassName();
+		try {
+			Class<?> clz = cl.loadClass(beanClassName);  //加载指定的类，通用的泛型Class<?>对象
+			return clz.newInstance();   //创建对象
+		}
+```
+
+M：所以它这里是通过获取map里对象的类名，来加载指定的类，并将其实例化出来。不过实例化出来的类和map对象的类是一样的吗？
+
+Z：map对象中的类只是记载了id和对应的类名，而实例出来的是一个完整的POJO对象，它有属于自己的属性。   
+
+M：我看到了代码中许多异常的处理，将``e.printStackTrace();``替代成``throw new BeanDefinitionStoreException("IOException parsing XML document", e);``,它做的是什么操作呢？
+
+Z：这里是对异常处理进行了封装，根据TDD开发模式，首先编写对应的单元测试:
+
+```java
+	@Test
+	public void testInvalidBean(){
+		BeanFactory factory = new DefaultBeanFactory("petstore-v1.xml");
+		try {
+			factory.getBean("invalidBean");
+		} catch (Exception e) {
+			return;   //触发异常则返回
+		}
+		Assert.fail("expect BeanCreationException");
+	}
+```
+
+M：这里测试的是什么异常呢？
+
+Z：Bean不存在的异常，它这里对异常情况进行包装处理
+
+```java
+public class BeanCreationException extends BeansException{
+	private String beanName;
+	public BeanCreationException(String msg) {
+		super(msg);
+	}
+	
+	public BeanCreationException(String msg, Throwable cause){
+		super(msg,cause);
+	}
+	
+	public BeanCreationException(String beanName, String msg){
+		super("Error creating bean with name '" + beanName + "': "+msg);
+		this.beanName = beanName;
+	}
+	
+	public BeanCreationException(String beanName, String msg, Throwable cause){
+		this(beanName, msg);
+		initCause(cause);
+	}
+	
+	public String getBeanName(){
+		return this.beanName;
+	}
+		
+}
+```
+
+它继承于父类BeansException，再继承RuntimeException
+
+```java
+public class BeansException extends RuntimeException{
+	public BeansException(String msg){
+		super(msg);
+	}
+	
+	public BeansException(String msg, Throwable cause){   //带Throwable参数
+		super(msg, cause);
+	}
+
+}
+```
+
+M：上面的异常用来捕获bean是否获取，那怎么捕获xml文件是否存在呢？
+
+Z：先写单元测试：
+
+```java
+	@Test
+	public void testInvalidXML(){
+		try {
+			new DefaultBeanFactory("xxx.xml");
+		} catch (BeanDefinitionStoreException e) {
+			return;
+		}
+		Assert.fail("expect BeanCreationException");
+	}
+```
+
+实现单元测试的类内容：
+
+```java
+public class BeanDefinitionStoreException extends BeansException{
+	public BeanDefinitionStoreException(String msg, Throwable cause){
+		super(msg, cause);
+	} 
+}
+```
+
+直接定义继承于RuntimeException的类就可以对相应的异常进行捕获。

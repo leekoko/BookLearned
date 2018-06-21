@@ -32,9 +32,9 @@ public class DefaultBeanFactory implements BeanFactory {
 		InputStream is = null;
 		try {
 			ClassLoader cl = ClassUtils.getDefaultClassLoader();
-			is = cl.getResourceAsStream(configFile);
-			SAXReader reader = new SAXReader();
-			Document doc = reader.read(is);
+			is = cl.getResourceAsStream(configFile); //读取配置文件
+			SAXReader reader = new SAXReader();  //dom4j解析xml文件
+			Document doc = reader.read(is);   //读取成Document文件
 			
 			Element root = doc.getRootElement();  //<beans>
 			Iterator<Element> iter = root.elementIterator();
@@ -64,7 +64,7 @@ public class DefaultBeanFactory implements BeanFactory {
 	}
 
 	public Object getBean(String beanID) {
-		BeanDefinition bd = this.getBeanDefinition(beanID);
+		BeanDefinition bd = this.getBeanDefinition(beanID);  //获取BeanDefinition对象
 		if(bd == null){
 			throw new BeanCreationException("Error creating does not exist");
 			//return null;

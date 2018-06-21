@@ -5,7 +5,7 @@ public class BeansException extends RuntimeException{
 		super(msg);
 	}
 	
-	public BeansException(String msg, Throwable cause){
+	public BeansException(String msg, Throwable cause){   //´øThrowable²ÎÊý
 		super(msg, cause);
 	}
 

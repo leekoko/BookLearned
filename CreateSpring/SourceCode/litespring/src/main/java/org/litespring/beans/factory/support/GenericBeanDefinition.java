@@ -14,7 +14,5 @@ public class GenericBeanDefinition implements BeanDefinition {
 	public String getBeanClassName() {
 		return this.beanClassName;
 	}
-	
-	
 
 }

@@ -31,7 +31,7 @@ public class BeanFactoryTest {
 		try {
 			factory.getBean("invalidBean");
 		} catch (Exception e) {
-			return;
+			return;   //触发异常则返回
 		}
 		Assert.fail("expect BeanCreationException");
 	}
