@@ -20,5 +20,7 @@ Z：《从零开始造Spring》这是公众号 **码农翻身** 作者刘欣于2
 
 #### 3.[Basic BeanFactory（上）](doc/BasicBeanFactoryA.md)  
 
+#### 4.[Basic BeanFactory（下）](doc/BasicBeanFactoryB.md)  
+
 
 

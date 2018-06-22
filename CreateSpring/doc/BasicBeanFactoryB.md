@@ -1,19 +1,8 @@
-package org.litespring.beans.factory.support;
+# Basic BeanFactory（下）   
 
-import java.io.InputStream;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+D：看一下这个类，``loadBeanDefinition()``方法有什么问题呢？  
 
-import org.dom4j.Document;
-import org.dom4j.Element;
-import org.dom4j.io.SAXReader;
-import org.litespring.beans.BeanDefinition;
-import org.litespring.beans.factory.BeanCreationException;
-import org.litespring.beans.factory.BeanDefinitionStoreException;
-import org.litespring.beans.factory.BeanFactory;
-import org.litespring.util.ClassUtils;
-
+```java
 public class DefaultBeanFactory implements BeanFactory {
 	
 	public static final String ID_ATTRIBUTE = "id";
@@ -21,23 +10,23 @@ public class DefaultBeanFactory implements BeanFactory {
 	private final Map<String,BeanDefinition> beanDefinitionMap = new ConcurrentHashMap();
 	
 	/**
-	 * �����ļ�
+	 * 构造文件
 	 * @param configFile
 	 */
 	public DefaultBeanFactory(String configFile) {
 		loadBeanDefinition(configFile);
 	}
 	/**
-	 * ����xml
+	 * 加载xml
 	 * @param configFile
 	 */
 	private void loadBeanDefinition(String configFile) {
 		InputStream is = null;
 		try {
 			ClassLoader cl = ClassUtils.getDefaultClassLoader();
-			is = cl.getResourceAsStream(configFile); //��ȡ�����ļ�
-			SAXReader reader = new SAXReader();  //dom4j����xml�ļ�
-			Document doc = reader.read(is);   //��ȡ��Document�ļ�
+			is = cl.getResourceAsStream(configFile); //读取配置文件
+			SAXReader reader = new SAXReader();  //dom4j解析xml文件
+			Document doc = reader.read(is);   //读取成Document文件
 			
 			Element root = doc.getRootElement();  //<beans>
 			Iterator<Element> iter = root.elementIterator();
@@ -66,10 +55,10 @@ public class DefaultBeanFactory implements BeanFactory {
 		return this.beanDefinitionMap.get(beanID);
 	}
 	/**
-	 * ��ȡbean����
+	 * 获取bean对象
 	 */
 	public Object getBean(String beanID) {
-		BeanDefinition bd = this.getBeanDefinition(beanID);  //��ȡBeanDefinition����
+		BeanDefinition bd = this.getBeanDefinition(beanID);  //获取BeanDefinition对象
 		if(bd == null){
 			throw new BeanCreationException("Error creating does not exist");
 			//return null;
@@ -78,7 +67,7 @@ public class DefaultBeanFactory implements BeanFactory {
 		String beanClassName = bd.getBeanClassName();
 		try {
 			Class<?> clz = cl.loadClass(beanClassName);
-			return clz.newInstance();   //��������
+			return clz.newInstance();   //创建对象
 		}
 		catch (Exception e) {
 			throw new BeanCreationException("Error creating does not exist");
@@ -94,3 +83,21 @@ public class DefaultBeanFactory implements BeanFactory {
 	}
 
 }
+```
+
+M：会有什么不妥的地方吗？
+
+Z：``loadBeanDefinition()``做的是xml文件的读取，而``getBean()``做的是对象的获取。违背了SRP单一职责原则。
+
+M：什么是单一职责原则？怎么理解？
+
+Z：比如，一根尺子，既可以用来打学生手板，也可以用来丈量布匹。而在单一职责原理下，尺子的两个功能就是引起这个类变化的两个原因，就应该写成两个类。   
+
+
+
+
+
+8min  loading
+
+
+
