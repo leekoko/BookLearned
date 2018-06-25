@@ -17,9 +17,8 @@ public class BeanFactoryTest {
 		//读取配置文件     面向接口编程
 		DefaultBeanFactory factory = new DefaultBeanFactory();
 		XmlBeanDefinitionReader reader = new XmlBeanDefinitionReader(factory);
-		reader.loadBeanDefinitions("petstore-v1.xml");
 		
-//		BeanFactory factory = new DefaultBeanFactory("petstore-v1.xml");
+		BeanFactory factory = new DefaultBeanFactory("petstore-v1.xml");
 		BeanDefinition bd = factory.getBeanDefinition("petStore");
 		//校验配置文件属性
 		assertEquals("org.litespring.service.v1.PetStoreService", bd.getBeanClassName());

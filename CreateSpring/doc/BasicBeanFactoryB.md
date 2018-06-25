@@ -93,6 +93,67 @@ M：什么是单一职责原则？怎么理解？
 
 Z：比如，一根尺子，既可以用来打学生手板，也可以用来丈量布匹。而在单一职责原理下，尺子的两个功能就是引起这个类变化的两个原因，就应该写成两个类。   
 
+M：根据单一职责，loadBeanDefinition提取成XMLBeanDefinitionReader类，然后通过``registerBeanDefinition()``方法进行调用。
+
+![](../imgs/s02.png)    
+
+Z：但是这样子的类图还有缺点就是,``registerBeanDefinition()``方法是一个会对生成的对象进行影响的方法，太敏感了，不应该直接向客户暴露。可以的话，我们要尽量向客户暴露最少量接口。所以要做接口拆分：
+
+![](../imgs/s03.png)  
+
+把两个无关的方法提取到BeanDefinitionRefistry类中，DefaultBeanFactory再同时对两个接口进行实现。
+
+M：简单来说，就是loading
+
+Z：第一步，我们要做的是测试案例。由于之前已经有测试案例，所以在其上面进行修改：
+
+```java
+	@Test
+	public void testGetBean() {
+		//读取配置文件     面向接口编程
+		DefaultBeanFactory factory = new DefaultBeanFactory();
+		XmlBeanDefinitionReader reader = new XmlBeanDefinitionReader(factory);
+		reader.loadBeanDefinitions("petstore-v1.xml");
+		
+//		BeanFactory factory = new DefaultBeanFactory("petstore-v1.xml");
+		BeanDefinition bd = factory.getBeanDefinition("petStore");
+		//校验配置文件属性
+		assertEquals("org.litespring.service.v1.PetStoreService", bd.getBeanClassName());
+		//实例化对象
+		PetStoreService petStore = (PetStoreService)factory.getBean("petStore");
+		//判断对象成功实例化否
+		assertNotNull(petStore);
+	}
+```
+
+M：``BeanFactory factory = new DefaultBeanFactory("petstore-v1.xml");``这个方法是怎么修改为以下代码的呢？
+
+```java
+		//读取配置文件     面向接口编程
+		DefaultBeanFactory factory = new DefaultBeanFactory();
+		XmlBeanDefinitionReader reader = new XmlBeanDefinitionReader(factory);
+		reader.loadBeanDefinitions("petstore-v1.xml");
+```
+
+Z：因为DefaultBeanFactory类是最底层的类，实现它之后将对象传到上一层的类中
+
+````java
+		DefaultBeanFactory factory = new DefaultBeanFactory();
+		XmlBeanDefinitionReader reader = new XmlBeanDefinitionReader(factory);
+````
+
+因为``loadBeanDefinitions()``方法在XmlBeanDefinitionReader类中，所以需要在该类实例化的对象中调用解析xml的方法``reader.loadBeanDefinitions("petstore-v1.xml");``      
+
+
+
+
+
+
+
+
+
+
+
 
 
 
