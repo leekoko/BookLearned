@@ -20,9 +20,9 @@
 
 #### 4.[Day 5 ，6: Pull Up Field提升字段& Push Down Field降低字段](extra/PullUpField.md)
 
-#### 5.[Day8：重命名Rename](extra/Rename.md)      
+#### 5.[Day7：重命名Rename](extra/Rename.md)         
 
-#### 6.[使用委托代替继承Replace Inheritance with Delegation](extra/Replace.md)    
+#### 6.[Day8：使用委托代替继承Replace Inheritance with Delegation](extra/Replace.md)       
 
 
 

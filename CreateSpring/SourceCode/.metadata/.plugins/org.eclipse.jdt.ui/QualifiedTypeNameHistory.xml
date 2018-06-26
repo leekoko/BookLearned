@@ -16,10 +16,10 @@
 <fullyQualifiedTypeName name="java.lang.RuntimeException"/>
 <fullyQualifiedTypeName name="org.junit.Test"/>
 <fullyQualifiedTypeName name="org.litespring.beans.factory.BeanFactory"/>
-<fullyQualifiedTypeName name="org.litespring.beans.factory.support.DefaultBeanFactory"/>
 <fullyQualifiedTypeName name="org.junit.Assert"/>
 <fullyQualifiedTypeName name="org.litespring.beans.factory.BeanCreationException"/>
 <fullyQualifiedTypeName name="java.lang.Throwable"/>
 <fullyQualifiedTypeName name="org.litespring.beans.BeansException"/>
 <fullyQualifiedTypeName name="org.litespring.beans.factory.BeanDefinitionStoreException"/>
+<fullyQualifiedTypeName name="org.litespring.beans.factory.support.DefaultBeanFactory"/>
 </qualifiedTypeNameHistroy>
