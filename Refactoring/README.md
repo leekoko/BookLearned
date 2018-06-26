@@ -24,14 +24,14 @@
 
 #### 6.[Day8：使用委托代替继承Replace Inheritance with Delegation](extra/Replace.md)       
 
+#### 7.[Day9：提取接口Extract Interface](extra/ExtractInterface.md)  
 
 
 
 
 
 
-6. [Refactoring Day 7 : Rename (method, class, parameter)](https://lostechies.com/blogs/sean_chambers/archive/2009/08/07/refactoring-day-7-rename-method-class-parameter.aspx)
-7. [Refactoring Day 8 : Replace Inheritance with Delegation](https://lostechies.com/blogs/sean_chambers/archive/2009/08/07/refactoring-day-8-replace-inheritance-with-delegation.aspx)
+
 8. [Refactoring Day 9 : Extract Interface](https://lostechies.com/blogs/sean_chambers/archive/2009/08/07/refactoring-day-9-extract-interface.aspx)
 9. [Refactoring Day 10 : Extract Method](https://lostechies.com/blogs/sean_chambers/archive/2009/08/10/refactoring-day-10-extract-method.aspx)
 10. [Refactoring Day 11 : Switch to Strategy](https://lostechies.com/blogs/sean_chambers/archive/2009/08/11/refactoring-day-11-switch-to-strategy.aspx)
