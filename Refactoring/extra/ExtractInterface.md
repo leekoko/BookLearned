@@ -98,4 +98,5 @@ public class RegistrationProcessor{
 }
 ```
 
-这样的话，添加相似的代码，只要添加相应的类即可。
+这样的话，添加相似的代码，只要添加相应的类即可。   
+

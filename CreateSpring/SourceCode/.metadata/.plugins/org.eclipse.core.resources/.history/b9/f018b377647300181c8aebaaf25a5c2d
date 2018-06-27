@@ -1,6 +1,0 @@
-package org.litespring.beans.factory;
-
-public class BeanDefinitionStoreException {
-	
-	public BeanDefinitionStoreException 
-}

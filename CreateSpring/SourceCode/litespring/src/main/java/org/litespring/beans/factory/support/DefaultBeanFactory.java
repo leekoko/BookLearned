@@ -8,63 +8,26 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
+import org.litespring.bean.factory.support.BeanDefinitionRegistry;
 import org.litespring.beans.BeanDefinition;
 import org.litespring.beans.factory.BeanCreationException;
 import org.litespring.beans.factory.BeanDefinitionStoreException;
 import org.litespring.beans.factory.BeanFactory;
 import org.litespring.util.ClassUtils;
 
-public class DefaultBeanFactory implements BeanFactory {
+public class DefaultBeanFactory implements BeanFactory ,BeanDefinitionRegistry{
 	
 	public static final String ID_ATTRIBUTE = "id";
 	public static final String CLASS_ATTRIBUTE = "class";
 	private final Map<String,BeanDefinition> beanDefinitionMap = new ConcurrentHashMap();
-	
-	/**
-	 * 构造文件
-	 * @param configFile
-	 */
-	public DefaultBeanFactory(String configFile) {
-		loadBeanDefinition(configFile);
-	}
-	/**
-	 * 加载xml
-	 * @param configFile
-	 */
-	private void loadBeanDefinition(String configFile) {
-		InputStream is = null;
-		try {
-			ClassLoader cl = ClassUtils.getDefaultClassLoader();
-			is = cl.getResourceAsStream(configFile); //读取配置文件
-			SAXReader reader = new SAXReader();  //dom4j解析xml文件
-			Document doc = reader.read(is);   //读取成Document文件
-			
-			Element root = doc.getRootElement();  //<beans>
-			Iterator<Element> iter = root.elementIterator();
-			while(iter.hasNext()){
-				Element ele = (Element)iter.next();
-				String id = ele.attributeValue(ID_ATTRIBUTE);
-				String beanClassName = ele.attributeValue(CLASS_ATTRIBUTE);
-				BeanDefinition bd = new GenericBeanDefinition(id,beanClassName);
-				this.beanDefinitionMap.put(id,bd);
-			}
-		} catch (Exception e) {
-			//e.printStackTrace();
-			throw new BeanDefinitionStoreException("IOException parsing XML document", e);
-		}finally {
-			if(is != null){
-				try {
-					is.close();
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		}
-	}
 
 	public BeanDefinition getBeanDefinition(String beanID) {
 		return this.beanDefinitionMap.get(beanID);
 	}
+	public void registerBeanDefinition(String beanID, BeanDefinition bd) {
+		this.beanDefinitionMap.put(beanID, bd);		
+	}
+
 	/**
 	 * 获取bean对象
 	 */
@@ -90,7 +53,9 @@ public class DefaultBeanFactory implements BeanFactory {
 		}catch (IllegalAccessException e) {
 			e.printStackTrace();
 		}*/
-		
 	}
+
+
+
 
 }

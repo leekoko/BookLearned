@@ -144,6 +144,14 @@ Z：因为DefaultBeanFactory类是最底层的类，实现它之后将对象传�
 
 因为``loadBeanDefinitions()``方法在XmlBeanDefinitionReader类中，所以需要在该类实例化的对象中调用解析xml的方法``reader.loadBeanDefinitions("petstore-v1.xml");``      
 
+M：
+
+
+
+
+
+
+
 
 
 

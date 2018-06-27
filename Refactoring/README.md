@@ -26,16 +26,22 @@
 
 #### 7.[Day9：提取接口Extract Interface](extra/ExtractInterface.md)  
 
+#### 8.[Day10：提取方法Extract Method](extra/ExtractMethod.md)  
+
+#### 9.[Day11：策略代替SwitchSwitch to Strategy](extra/SwitchtoStrategy.md)   
+
+#### 10.[Day12：分解依赖Break Dependencies](extra/BreakDependencies.md)（无较好demo）   
+
+#### 11.[Day13：抽取方法对象Extract Method Object](extra/ExtractMethodObject.md)  
 
 
 
 
 
 
-8. [Refactoring Day 9 : Extract Interface](https://lostechies.com/blogs/sean_chambers/archive/2009/08/07/refactoring-day-9-extract-interface.aspx)
-9. [Refactoring Day 10 : Extract Method](https://lostechies.com/blogs/sean_chambers/archive/2009/08/10/refactoring-day-10-extract-method.aspx)
-10. [Refactoring Day 11 : Switch to Strategy](https://lostechies.com/blogs/sean_chambers/archive/2009/08/11/refactoring-day-11-switch-to-strategy.aspx)
-11. [Refactoring Day 12 : Break Dependencies](https://lostechies.com/blogs/sean_chambers/archive/2009/08/12/refactoring-day-12-break-dependencies.aspx)
+
+
+
 12. [Refactoring Day 13 : Extract Method Object](https://lostechies.com/blogs/sean_chambers/archive/2009/08/13/refactoring-day-13-extract-method-object.aspx)
 13. [Refactoring Day 14 : Break Responsibilities](https://lostechies.com/blogs/sean_chambers/archive/2009/08/14/refactoring-day-14-break-responsibilities.aspx)
 14. [Refactoring Day 15 : Remove Duplication](https://lostechies.com/blogs/sean_chambers/archive/2009/08/15/refactoring-day-15-remove-duplication.aspx)
