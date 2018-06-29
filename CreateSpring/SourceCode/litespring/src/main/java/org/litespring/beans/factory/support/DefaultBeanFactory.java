@@ -56,6 +56,4 @@ public class DefaultBeanFactory implements BeanFactory ,BeanDefinitionRegistry{
 	}
 
 
-
-
 }

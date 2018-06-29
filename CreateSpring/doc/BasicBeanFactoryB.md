@@ -1,5 +1,7 @@
 # Basic BeanFactory（下）   
 
+### 方法迁移   
+
 D：看一下这个类，``loadBeanDefinition()``方法有什么问题呢？  
 
 ```java
@@ -103,7 +105,7 @@ Z：但是这样子的类图还有缺点就是,``registerBeanDefinition()``方�
 
 把两个无关的方法提取到BeanDefinitionRefistry类中，DefaultBeanFactory再同时对两个接口进行实现。
 
-M：简单来说，就是loading
+M：简单来说，就是本来在BeanFactory中读取xml文件，然后存到数组中。现在变成在XmlBeanDefinitionReader中读取，而传入factory将会调用其自身存储方法，来存储查询到的数据。
 
 Z：第一步，我们要做的是测试案例。由于之前已经有测试案例，所以在其上面进行修改：
 
@@ -144,7 +146,169 @@ Z：因为DefaultBeanFactory类是最底层的类，实现它之后将对象传�
 
 因为``loadBeanDefinitions()``方法在XmlBeanDefinitionReader类中，所以需要在该类实例化的对象中调用解析xml的方法``reader.loadBeanDefinitions("petstore-v1.xml");``      
 
-M：
+D：``XmlBeanDefinitionReader reader = new XmlBeanDefinitionReader(factory);``将带有存储方法的对象传给XmlBeanDefinitionReader，它是怎么实现其方法的调用的呢？
+
+Z：如下代码
+
+```java
+	public XmlBeanDefinitionReader(BeanDefinitionRegistry registry){
+		this.registry = registry;
+	}
+	/**
+	 * 加载xml(职责分离，挪到xml处理类中)
+	 * @param configFile
+	 */
+	public void loadBeanDefinition(String configFile) {
+		InputStream is = null;
+		try {
+			ClassLoader cl = ClassUtils.getDefaultClassLoader();
+			is = cl.getResourceAsStream(configFile); //读取配置文件
+			SAXReader reader = new SAXReader();  //dom4j解析xml文件
+			Document doc = reader.read(is);   //读取成Document文件
+			
+			Element root = doc.getRootElement();  //<beans>
+			Iterator<Element> iter = root.elementIterator();
+			while(iter.hasNext()){
+				Element ele = (Element)iter.next();
+				String id = ele.attributeValue(ID_ATTRIBUTE);
+				String beanClassName = ele.attributeValue(CLASS_ATTRIBUTE);
+				BeanDefinition bd = new GenericBeanDefinition(id,beanClassName);
+				this.registry.registerBeanDefinition(id, bd);
+			}
+		} catch (Exception e) {
+			//e.printStackTrace();
+			throw new BeanDefinitionStoreException("IOException parsing XML document", e);
+		}finally {
+			if(is != null){
+				try {
+					is.close();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+```
+
+传过去的时候会调用其构造函数，获取实例化``BeanDefinitionRegistry``的对象，然后代码在执行的时候使用已经实例化了的``BeanDefinitionRegistry``的对象：``this.registry.registerBeanDefinition(id, bd);``  
+
+D：为什么要把``getBeanDefinition()``和``registerBeanDefinition()``从一个接口提取到一个新的接口``BeanDefinitionRegistry``中？
+
+Z：那我们要先了解接口的作用，当我们使用面向接口编程的时候，我们就只能使用该接口下的方法。
+
+像``BeanFactory test = new DefaultBeanFactory();``我就只能使用BeanFactory 接口下声明的方法。因为``BeanFactory ``这个接口是可以让用户调用的，但是``getBeanDefinition()``和``registerBeanDefinition()``是用来处理内部数据用的，用户一般情况下根本就不需要对其干预。
+
+为了不将这两个方法暴露给用户，我们单独将它两提取成一个接口``BeanDefinitionRegistry``，交由``DefaultBeanFactory``去共同实现:
+
+```java
+public class DefaultBeanFactory implements BeanFactory ,BeanDefinitionRegistry{
+	
+	public static final String ID_ATTRIBUTE = "id";
+	public static final String CLASS_ATTRIBUTE = "class";
+	private final Map<String,BeanDefinition> beanDefinitionMap = new ConcurrentHashMap();
+
+	public BeanDefinition getBeanDefinition(String beanID) {
+		return this.beanDefinitionMap.get(beanID);
+	}
+	public void registerBeanDefinition(String beanID, BeanDefinition bd) {
+		this.beanDefinitionMap.put(beanID, bd);		
+	}
+
+	/**
+	 * 获取bean对象
+	 */
+	public Object getBean(String beanID) {
+		BeanDefinition bd = this.getBeanDefinition(beanID);  //获取BeanDefinition对象
+		if(bd == null){
+			throw new BeanCreationException("Error creating does not exist");
+			//return null;
+		}
+		ClassLoader cl = ClassUtils.getDefaultClassLoader();
+		String beanClassName = bd.getBeanClassName();
+		try {
+			Class<?> clz = cl.loadClass(beanClassName);
+			return clz.newInstance();   //创建对象
+		}
+		catch (Exception e) {
+			throw new BeanCreationException("Error creating does not exist");
+		}
+		/*catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}catch (InstantiationException e) {
+			e.printStackTrace();
+		}catch (IllegalAccessException e) {
+			e.printStackTrace();
+		}*/
+	}
+
+}
+```
+
+Z：因为测试用例也出现了重复配置性代码，可以提取到@Before下。Before会在每个方法执行前执行
+
+```java
+	DefaultBeanFactory factory = null;
+	XmlBeanDefinitionReader reader = null;
+	
+	@Before
+	public void setUP(){
+		factory = new DefaultBeanFactory();
+		reader = new XmlBeanDefinitionReader(factory);
+	}
+```
+
+### 接口继承
+
+D：为什么要在外层再被ApplicationContext继承？
+
+![](../imgs/s04.png)   
+
+Z：因为我们一般不用知道底层DefaultBeanFactory，XmlBeanDefinitionReader这些类的实现细节，而是将其内部的逻辑封装起来，只调用最少的请求。
+
+M：创建测试用例，我们希望传一个xml文件进去，就能直接使用其getBean方法，两个类整合成一个类
+
+```java
+public class ApplicationContextTest {
+
+	@Test
+	public void testGetBean() {
+		ApplicationContext ctx = new ClassPathXmlApplicationContext("petstore-v1.xml");
+		PetStoreService petStore = (PetStoreService)ctx.getBean("petStore");
+		Assert.assertNotNull(petStore);
+	}
+
+}
+```
+
+D：本来直接让ClassPathXmlApplicationContext去实现BeanFactory的``Object getBean(String string);``方法就可以，为什么要继承呢？
+
+Z：loading
+
+D：继承接口的实现类，我们要怎么去编写其底层方法呢？
+
+Z：使用构造方法注入一个DefaultBeanFactory对象，然后曝光一个getBean()方法出来
+
+```java
+public class ClassPathXmlApplicationContext implements ApplicationContext {
+
+	private DefaultBeanFactory factory = null;
+	
+	public ClassPathXmlApplicationContext(String configFile){
+		factory = new DefaultBeanFactory();
+		XmlBeanDefinitionReader reader = new XmlBeanDefinitionReader(factory);
+		reader.loadBeanDefinition(configFile);
+	}
+	
+	public Object getBean(String beanID) {
+		return factory.getBean(beanID);
+	}
+
+}
+```
+
+M：用户直接通过ClassPathXmlApplicationContext就可以传配置文件，获取Bean对象了。
+
+Z：因为多个Junit测试需要测试，可以使用Junit Suite套件将测试案例统一管理起来。
 
 
 
@@ -158,15 +322,7 @@ M：
 
 
 
-
-
-
-
-
-
-
-
-8min  loading
+17min 
 
 
 
