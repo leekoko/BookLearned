@@ -14,12 +14,12 @@ public class FileSystemResource implements Resource {
 	
 	public FileSystemResource(String path){
 		Assert.notNull(path, "Path must not be null");
-		this.file = new File(path);
+		this.file = new File(path);    //根据路径new File
 		this.path = path;
 	}
 	
 	public InputStream getInputStream() throws IOException {
-		return new FileInputStream(this.file);
+		return new FileInputStream(this.file);   //将File转化为数据流
 	}
 
 	public String getDescription() {

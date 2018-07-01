@@ -10,6 +10,7 @@ import org.litespring.bean.factory.support.BeanDefinitionRegistry;
 import org.litespring.beans.BeanDefinition;
 import org.litespring.beans.factory.BeanDefinitionStoreException;
 import org.litespring.beans.factory.support.GenericBeanDefinition;
+import org.litespring.core.io.Resource;
 import org.litespring.util.ClassUtils;
 
 public class XmlBeanDefinitionReader {
@@ -26,11 +27,12 @@ public class XmlBeanDefinitionReader {
 	 * 加载xml(职责分离，挪到xml处理类中)
 	 * @param configFile
 	 */
-	public void loadBeanDefinition(String configFile) {
+	public void loadBeanDefinition(Resource resource) {
 		InputStream is = null;
 		try {
-			ClassLoader cl = ClassUtils.getDefaultClassLoader();
-			is = cl.getResourceAsStream(configFile); //读取配置文件
+//			ClassLoader cl = ClassUtils.getDefaultClassLoader();   //获取classLoader
+//			is = cl.getResourceAsStream(configFile); //读取配置文件
+			is = resource.getInputStream();
 			SAXReader reader = new SAXReader();  //dom4j解析xml文件
 			Document doc = reader.read(is);   //读取成Document文件
 			

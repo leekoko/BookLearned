@@ -306,9 +306,166 @@ public class ClassPathXmlApplicationContext implements ApplicationContext {
 }
 ```
 
-M：用户直接通过ClassPathXmlApplicationContext就可以传配置文件，获取Bean对象了。
+M：用户直接通过ClassPathXmlApplicationContext就可以传配置Class文件路径，获取Bean对象了。
 
-Z：因为多个Junit测试需要测试，可以使用Junit Suite套件将测试案例统一管理起来。
+Z：因为多个Junit测试需要测试，可以使用Junit Suite套件将测试案例统一管理起来。    
+
+### 文件流    
+
+Z：用户直接通过ClassPathXmlApplicationContext就可以传配置Class文件路径，获取Bean对象。但是如果传的是File文件的路径，这个方法就不通用了。
+
+D：用户调用ClassPathXmlApplicationContext类可以获取类的Bean对象，调用FileSystemXmlApplicationContext类可以获取File类的对象，单元测试要怎么写？
+
+Z：如下：
+
+```java
+public class ApplicationContextTest {
+
+	@Test
+	public void testGetBean() {
+		ApplicationContext ctx = new ClassPathXmlApplicationContext("petstore-v1.xml");
+		PetStoreService petStore = (PetStoreService)ctx.getBean("petStore");
+		Assert.assertNotNull(petStore);
+	}
+	
+	@Test
+	public void testGetBeanFromFileSystemContext() {
+		ApplicationContext ctx = new FileSystemXmlApplicationContext("D:\\学习资料\\petstore-v1.xml");
+		PetStoreService petStore = (PetStoreService)ctx.getBean("petStore");
+		Assert.assertNotNull(petStore);
+	}
+}
+```
+
+D：现在工作流的获取方式如下：XmlBeanDefinitionReader.java
+
+```java
+			ClassLoader cl = ClassUtils.getDefaultClassLoader();  //获取classLoader
+			is = cl.getResourceAsStream(configFile); //读取配置文件
+```
+
+但是这种方式获取不了File文件，导致这个XmlBeanDefinitionReader文件不能通用，如何处理？
+
+Z：把路径的文件经行处理后再传到XmlBeanDefinitionReader中
+
+因为处理Class和File的方法相似，可以把接口提取出来：Resource.java
+
+```java
+public interface Resource {
+	public InputStream getInputStream() throws IOException;
+	public String getDescription();
+
+}
+```
+
+两种解析方式分别实现Resource接口，提供获取文件流方法：
+
+Class解析：
+
+```java
+public class ClassPathResource implements Resource {
+	
+	private String path;
+	private ClassLoader classLoader;
+
+	public ClassPathResource(String path){  //构造方法1
+		this(path, (ClassLoader)null);
+	}
+	
+	
+	public ClassPathResource(String path, ClassLoader classLoader) {   //构造方法2
+		this.path = path;
+		this.classLoader = (classLoader != null ? classLoader : ClassUtils.getDefaultClassLoader());
+	}
+	
+	public InputStream getInputStream() throws IOException {  //获取流方法
+		InputStream is = this.classLoader.getResourceAsStream(this.path);
+		if(is == null){
+			throw new FileNotFoundException(path + "cannot be opened");
+		}
+		return is;
+	}
+
+	public String getDescription() {
+		return this.path;
+	}
+
+}
+```
+
+File解析：
+
+```java
+public class FileSystemResource implements Resource {
+
+	private final String path;
+	private final File file;
+	
+	public FileSystemResource(String path){
+		Assert.notNull(path, "Path must not be null");
+		this.file = new File(path);    //根据路径new File
+		this.path = path;
+	}
+	
+	public InputStream getInputStream() throws IOException {
+		return new FileInputStream(this.file);   //将File转化为数据流
+	}
+
+	public String getDescription() {
+		return "file [" + this.file.getAbsolutePath() + "]";
+	}
+
+}
+```
+
+提取出解析代码之后，XmlBeanDefinitionReader只要调用``is = resource.getInputStream();``就可以获取两种文件流，实现了通用。  
+
+M：``Assert.notNull(path, "Path must not be null");``是怎么实现自定义异常的？
+
+Z：对原有的异常进行封装，形成工具类
+
+```java
+public class Assert {
+	public static void notNull(Object object, String message){
+		if(object == null){
+			throw new IllegalArgumentException(message);
+		}
+	}
+
+}
+```
+
+M：简单来说，就是因为要解析Class和File两种形式，但是负责解析的类的方法只对Class进行解析，于是我们将文件先解析完再传进类的方法中。因为解析有共性，所以提出出一个接口，再用两个类分别实现改接口。
+
+### 模板方法    
+
+D：以下两个方法的相似度很高，要怎么把相似的代码提取出来呢?
+
+```java
+	public ClassPathXmlApplicationContext(String configFile){
+		factory = new DefaultBeanFactory();
+		XmlBeanDefinitionReader reader = new XmlBeanDefinitionReader(factory);
+		Resource resource = new ClassPathResource(configFile);
+		reader.loadBeanDefinition(resource);
+	}
+```
+
+```java
+	public FileSystemXmlApplicationContext(String configFile){
+		factory = new DefaultBeanFactory();
+		XmlBeanDefinitionReader reader = new XmlBeanDefinitionReader(factory);
+		Resource resource = new FileSystemResource(configFile);
+		reader.loadBeanDefinition(resource);
+	}
+```
+
+仅仅是实例化对象的方法不同：   
+
+``Resource resource = new ClassPathResource(configFile);``和``Resource resource = new FileSystemResource(configFile);``   
+
+Z：使用模板方法设计模式：
+
+![](../imgs/s05.png)  
 
 
 
@@ -322,7 +479,13 @@ Z：因为多个Junit测试需要测试，可以使用Junit Suite套件将测试
 
 
 
-17min 
+
+
+
+
+
+
+
 
 
 
