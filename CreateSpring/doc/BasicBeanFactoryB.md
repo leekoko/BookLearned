@@ -261,7 +261,7 @@ Z：因为测试用例也出现了重复配置性代码，可以提取到@Before
 
 D：为什么要在外层再被ApplicationContext继承？
 
-![](../imgs/s04.png)   
+![](../imgs/s04.png)     
 
 Z：因为我们一般不用知道底层DefaultBeanFactory，XmlBeanDefinitionReader这些类的实现细节，而是将其内部的逻辑封装起来，只调用最少的请求。
 
@@ -465,15 +465,63 @@ D：以下两个方法的相似度很高，要怎么把相似的代码提取出�
 
 Z：使用模板方法设计模式：
 
-![](../imgs/s05.png)  
+![](../imgs/s05.png)   
 
+```java  
+public abstract class AbstrackApplicationContext implements ApplicationContext {
+	
+	private DefaultBeanFactory factory = null;
+	
+	public AbstrackApplicationContext(String configFile){   //相同代码
+		factory = new DefaultBeanFactory();
+		XmlBeanDefinitionReader reader = new XmlBeanDefinitionReader(factory);
+		Resource resource = this.getResourceByPath(configFile);
+		reader.loadBeanDefinition(resource);
+	}
+	
+	public Object getBean(String beanID) {
+		return factory.getBean(beanID);
+	}
+	
+	protected abstract Resource getResourceByPath(String path);    //有差异的抽象方法
+}
+```
 
+将相同的方法提取出来，形成抽象类，作为模板使用。而不同的代码部分定义抽象方法进行实现：
 
+```java
+public class ClassPathXmlApplicationContext extends AbstrackApplicationContext {
 
+	public ClassPathXmlApplicationContext(String configFile) {
+		super(configFile);
+	}
 
+	@Override
+	protected Resource getResourceByPath(String configFile) {
+		return new ClassPathResource(configFile);
+	}
 
+}
+```
 
+```java
+public class FileSystemXmlApplicationContext extends AbstrackApplicationContext{
 
+	public FileSystemXmlApplicationContext(String configFile) {
+		super(configFile);
+	}
+
+	@Override
+	protected Resource getResourceByPath(String configFile) {
+		return new FileSystemResource(configFile);
+	}
+
+}
+```
+
+### ClassLoader
+
+视频3 的 42:54
 
 
 

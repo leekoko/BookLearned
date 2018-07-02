@@ -9,7 +9,7 @@ public abstract class AbstrackApplicationContext implements ApplicationContext {
 	
 	private DefaultBeanFactory factory = null;
 	
-	public AbstrackApplicationContext(String configFile){
+	public AbstrackApplicationContext(String configFile){    //相同代码
 		factory = new DefaultBeanFactory();
 		XmlBeanDefinitionReader reader = new XmlBeanDefinitionReader(factory);
 		Resource resource = this.getResourceByPath(configFile);
@@ -20,5 +20,5 @@ public abstract class AbstrackApplicationContext implements ApplicationContext {
 		return factory.getBean(beanID);
 	}
 	
-	protected abstract Resource getResourceByPath(String path); 
+	protected abstract Resource getResourceByPath(String path);      //有差异的抽象方法
 }
