@@ -6,7 +6,7 @@
 
 ### 2.[码出高效：Java开发手册](Ali_Refactoring/README.md)   
 
-### 3.[代码精进之路](exquisite/README.md)
+
 
 ## B.基础知识   
 
